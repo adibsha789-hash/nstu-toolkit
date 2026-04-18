@@ -362,6 +362,7 @@
   <div class="toolbar-group">
     <div class="toolbar-label">&nbsp;</div>
     <div class="toolbar-controls">
+      <button onclick="location.href='index.html'" style="background: #6c757d; color: white; border: none; font-weight: bold;" title="Back to Home">Home</button>
       <button onclick="saveAndPrint()" style="background: #28a745; color: white; border: none; font-weight: bold;">Print / Save PDF</button>
     </div>
   </div>
@@ -375,7 +376,7 @@
       <img src="https://upload.wikimedia.org/wikipedia/en/7/70/Logo_of_Noakhali_Science_and_Technology_University.gif" class="logo" id="top-logo" alt="NSTU Logo">
       <div class="editable uni-name-bn" contenteditable="true">নোয়াখালী বিজ্ঞান ও প্রযুক্তি বিশ্ববিদ্যালয়</div>
       <div class="editable uni-name-en" contenteditable="true">Noakhali Science and Technology University</div>
-      <div class="editable dept-name" contenteditable="true">DEPARTMENT OF </div>
+      <div class="editable dept-name" id="dept-box" contenteditable="true" data-type="savedDeptsHTML">DEPARTMENT OF </div>
       <div class="course-info">
         <div class="editable" contenteditable="true"><b>Course Title:</b> <i>Enter Course Title here_</i></div>
         <div class="editable" contenteditable="true"><b>Course Code:</b> <i>Enter Course Code here_</i></div>
@@ -443,18 +444,22 @@
   }
 
   function saveAndPrint() {
+      // Get existing elements
       let teacherHTML = document.getElementById('teacher-box').innerHTML;
       let studentHTML = document.getElementById('student-box').innerHTML;
+      let deptHTML = document.getElementById('dept-box').innerHTML;
       
       let tDetails = getBoxDetails(teacherHTML);
       let sDetails = getBoxDetails(studentHTML);
       
+      // Save Teacher info
       let teachers = JSON.parse(localStorage.getItem('savedTeachersHTML') || '{}');
       if (tDetails.name && !tDetails.name.includes("Teacher Name_")) {
           teachers[tDetails.name] = teacherHTML;
       }
       localStorage.setItem('savedTeachersHTML', JSON.stringify(teachers));
       
+      // Save Student info
       let students = JSON.parse(localStorage.getItem('savedStudentsHTML') || '{}');
       if (sDetails.name && !sDetails.name.includes("Student Name_")) {
           students[sDetails.name] = studentHTML;
@@ -463,6 +468,14 @@
           students[sDetails.roll] = studentHTML;
       }
       localStorage.setItem('savedStudentsHTML', JSON.stringify(students));
+
+      // Save Department info
+      let deptText = document.getElementById('dept-box').innerText.replace(/DEPARTMENT OF\s*/i, '').trim();
+      if (deptText.length >= 3) {
+          let depts = JSON.parse(localStorage.getItem('savedDeptsHTML') || '{}');
+          depts[deptText] = deptHTML;
+          localStorage.setItem('savedDeptsHTML', JSON.stringify(depts));
+      }
       
       window.print();
   }
@@ -472,22 +485,28 @@
   document.body.appendChild(autocompleteList);
   let currentActiveInput = null;
 
-  document.querySelectorAll('.box-content[data-type]').forEach(box => {
+  // Updated querySelector to include the department box
+  document.querySelectorAll('.editable[data-type]').forEach(box => {
     box.addEventListener('input', function() {
        let type = this.getAttribute('data-type');
-       let details = getBoxDetails(this.innerHTML);
-       
        let savedData = JSON.parse(localStorage.getItem(type) || '{}');
        let keys = Object.keys(savedData);
        
        autocompleteList.innerHTML = '';
-       
        let searchTerms = [];
-       if (details.name && details.name.length >= 2 && !details.name.includes("Name_")) {
-           searchTerms.push(details.name);
-       }
-       if (details.roll && details.roll.length >= 2) {
-           searchTerms.push(details.roll);
+       
+       // Custom Logic for Department vs Teacher/Student
+       if (type === 'savedDeptsHTML') {
+           let text = this.innerText.replace(/DEPARTMENT OF\s*/i, '').trim();
+           if (text.length >= 2) searchTerms.push(text);
+       } else {
+           let details = getBoxDetails(this.innerHTML);
+           if (details.name && details.name.length >= 2 && !details.name.includes("Name_")) {
+               searchTerms.push(details.name);
+           }
+           if (details.roll && details.roll.length >= 2) {
+               searchTerms.push(details.roll);
+           }
        }
        
        if (searchTerms.length === 0) {
