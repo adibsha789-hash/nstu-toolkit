@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NSTU Lab Index Generator</title>
+<style>
+  body { 
+    background: #e9ecef; 
+    font-family: 'Times New Roman', Times, serif; 
+    margin: 0; 
+    padding: 20px; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+  }
+  
+  /* Toolbar Styles */
+  .toolbar {
+    background: white; padding: 15px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    position: sticky; top: 10px; z-index: 100; width: 100%; max-width: 800px; display: flex; justify-content: center; flex-wrap: wrap; gap: 15px;
+    box-sizing: border-box;
+  }
+  .toolbar button { 
+    padding: 10px 20px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; font-size: 15px; transition: 0.2s; 
+  }
+  .btn-home { background: #6c757d; color: white; }
+  .btn-home:hover { background: #5a6268; }
+  .btn-add { background: #007bff; color: white; }
+  .btn-add:hover { background: #0069d9; }
+  .btn-toggle { background: #ffc107; color: #212529; } 
+  .btn-toggle:hover { background: #e0a800; }
+  .btn-print { background: #28a745; color: white; }
+  .btn-print:hover { background: #218838; }
+  
+  /* A4 Page Styles */
+  .a4-page {
+    width: 100%; 
+    max-width: 210mm; 
+    min-height: 297mm; 
+    background: white; 
+    padding: 20mm; 
+    box-sizing: border-box;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2); 
+    position: relative; 
+    margin-bottom: 30px; /* Added space before the footer credit */
+  }
+  
+  /* Watermark Styling */
+  .watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.1; 
+    width: 110mm; 
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* Content wrapper to sit above watermark */
+  .content-wrapper {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Header Section */
+  .header-section { text-align: center; margin-bottom: 40px; margin-top: 20px; }
+  .index-title {
+    font-size: 30px; 
+    font-weight: bold; 
+    text-decoration: underline; 
+    text-transform: uppercase;
+  }
+  
+  /* Table Styles */
+  .table-wrapper {
+    width: 100%;
+  }
+  table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-top: 10px; 
+    background: transparent; 
+    table-layout: fixed; 
+  }
+  th, td { 
+    border: 1px solid black; 
+    padding: 16px 12px; 
+    text-align: center; 
+    font-size: 20px; 
+    word-wrap: break-word; 
+    overflow-wrap: break-word; 
+  } 
+  th { background-color: #f2f2f2; font-weight: bold; }
+  .exp-name { text-align: left; }
+  
+  /* Editable Field Styles */
+  .editable { outline: none; transition: 0.2s; cursor: text; }
+  .editable:hover, .editable:focus { 
+    background: rgba(0, 123, 255, 0.05); 
+    box-shadow: inset 0 0 0 2px rgba(0, 123, 255, 0.4); 
+  }
+  
+  /* Delete Button Styles */
+  .btn-delete { 
+    color: white; background: #dc3545; cursor: pointer; font-weight: bold; font-size: 14px; 
+    border: none; border-radius: 4px; padding: 6px 12px;
+  }
+  .btn-delete:hover { background: #c82333; }
+
+  /* TOGGLE PAGE COLUMN CSS */
+  body.hide-page-col .page-col {
+    display: none !important;
+  }
+  body.hide-page-col .name-col {
+    width: 80% !important; 
+  }
+
+  /* Footer Credit Styling */
+  .footer-credit {
+    margin-bottom: 40px;
+    padding: 15px 30px;
+    background: white;
+    border-radius: 50px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    font-size: 15px;
+    color: #495057;
+    text-align: center;
+    font-style: italic;
+    border: 1px solid #dee2e6;
+    z-index: 10;
+  }
+
+  /* =========================================
+     MOBILE RESPONSIVE CSS
+     ========================================= */
+  @media screen and (max-width: 768px) {
+    body { padding: 10px; }
+    .toolbar { padding: 10px; flex-wrap: wrap; gap: 8px; }
+    .toolbar button { flex: 1 1 auto; font-size: 13px; padding: 10px 5px; }
+    .a4-page { padding: 15px; min-height: 600px; } 
+    th, td { font-size: 14px; padding: 10px 5px; } 
+    .index-title { font-size: 22px; margin-bottom: 20px; }
+    .watermark { width: 60%; }
+    .btn-delete { padding: 5px 8px; font-size: 12px; }
+  }
+  
+  /* =========================================
+     PRINT RULES - STRICTLY 1 PAGE
+     ========================================= */
+  @page {
+    size: A4;
+    margin: 0mm; 
+  }
+
+  @media print {
+    .no-print { display: none !important; }
+    
+    html, body { 
+      padding: 0 !important; 
+      margin: 0 !important; 
+      background: white; 
+      width: 210mm !important;
+      height: 297mm !important;
+      overflow: hidden !important; 
+      -webkit-print-color-adjust: exact !important; 
+      print-color-adjust: exact !important; 
+    }
+    
+    .a4-page { 
+      box-shadow: none !important; 
+      margin: 0 !important; 
+      padding: 20mm !important; 
+      width: 210mm !important; 
+      max-width: 210mm !important;
+      height: 297mm !important; 
+      max-height: 297mm !important;
+      overflow: hidden !important; 
+      page-break-after: avoid;
+      page-break-inside: avoid;
+    }
+    
+    .watermark { width: 110mm !important; } 
+    th, td { font-size: 20px !important; padding: 16px 12px !important; }
+    .index-title { font-size: 30px !important; }
+    .editable { box-shadow: none !important; background: transparent !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <button class="btn-home" onclick="location.href='index.html'">Home</button>
+  <button class="btn-add" onclick="addRow()">+ Add Experiment</button>
+  <button class="btn-toggle" id="pageToggleBtn" onclick="togglePageNo()">Remove page no</button>
+  <button class="btn-print" onclick="window.print()">Print Index</button>
+</div>
+
+<div class="a4-page">
+  <img src="https://upload.wikimedia.org/wikipedia/en/7/70/Logo_of_Noakhali_Science_and_Technology_University.gif" class="watermark" alt="NSTU Watermark">
+  
+  <div class="content-wrapper">
+    <div class="header-section">
+      <div class="index-title editable" contenteditable="true">INDEX</div>
+    </div>
+
+    <div class="table-wrapper">
+      <table id="indexTable">
+        <thead>
+          <tr>
+            <th width="15%">Exp. No</th>
+            <th width="65%" class="name-col">Name of the Experiment</th>
+            <th width="15%" class="page-col">Page No</th>
+            <th width="5%" class="no-print"></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr>
+            <td contenteditable="true" class="editable">01</td>
+            <td contenteditable="true" class="editable exp-name name-col">Introduction to Computer Hardware</td>
+            <td contenteditable="true" class="editable page-col">01-05</td>
+            <td class="no-print"><button class="btn-delete" onclick="deleteRow(this)" title="Delete Row">X</button></td>
+          </tr>
+          <tr>
+            <td contenteditable="true" class="editable">02</td>
+            <td contenteditable="true" class="editable exp-name name-col"></td>
+            <td contenteditable="true" class="editable page-col"></td>
+            <td class="no-print"><button class="btn-delete" onclick="deleteRow(this)" title="Delete Row">X</button></td>
+          </tr>
+          <tr>
+            <td contenteditable="true" class="editable">03</td>
+            <td contenteditable="true" class="editable exp-name name-col"></td>
+            <td contenteditable="true" class="editable page-col"></td>
+            <td class="no-print"><button class="btn-delete" onclick="deleteRow(this)" title="Delete Row">X</button></td>
+          </tr>
+          <tr>
+            <td contenteditable="true" class="editable">04</td>
+            <td contenteditable="true" class="editable exp-name name-col"></td>
+            <td contenteditable="true" class="editable page-col"></td>
+            <td class="no-print"><button class="btn-delete" onclick="deleteRow(this)" title="Delete Row">X</button></td>
+          </tr>
+          <tr>
+            <td contenteditable="true" class="editable">05</td>
+            <td contenteditable="true" class="editable exp-name name-col"></td>
+            <td contenteditable="true" class="editable page-col"></td>
+            <td class="no-print"><button class="btn-delete" onclick="deleteRow(this)" title="Delete Row">X</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="footer-credit no-print">
+  Developed with AI by <b>Adib Adnan (CSTE-20)</b>
+</div>
+
+<script>
+  // Enhanced toggle function with dynamic text
+  function togglePageNo() {
+    const isHidden = document.body.classList.toggle('hide-page-col');
+    const btn = document.getElementById('pageToggleBtn');
+    
+    if (isHidden) {
+      btn.innerText = "Add page no";
+    } else {
+      btn.innerText = "Remove page no";
+    }
+  }
+
+  function addRow() {
+    const table = document.getElementById('tableBody');
+    const rowCount = table.rows.length + 1;
+    const newRow = document.createElement('tr');
+    
+    const formattedNumber = rowCount < 10 ? '0' + rowCount : rowCount;
+    
+    newRow.innerHTML = `
+      <td contenteditable="true" class="editable">${formattedNumber}</td>
+      <td contenteditable="true" class="editable exp-name name-col"></td>
+      <td contenteditable="true" class="editable page-col"></td>
+      <td class="no-print"><button class="btn-delete" onclick="deleteRow(this)" title="Delete Row">X</button></td>
+    `;
+    table.appendChild(newRow);
+  }
+
+  function deleteRow(btn) {
+    const row = btn.parentNode.parentNode;
+    row.parentNode.removeChild(row);
+    updateRowNumbers(); 
+  }
+
+  function updateRowNumbers() {
+    const table = document.getElementById('tableBody');
+    for (let i = 0; i < table.rows.length; i++) {
+      let num = i + 1;
+      let formattedNumber = num < 10 ? '0' + num : num;
+      table.rows[i].cells[0].innerText = formattedNumber;
+    }
+  }
+</script>
+
+</body>
+</html>

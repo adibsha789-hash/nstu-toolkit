@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NSTU Universal Cover Page Generator</title>
+<style>
+  body { 
+    background: #e9ecef; 
+    font-family: 'Times New Roman', Times, serif; 
+    margin: 0; 
+    padding: 30px 20px; 
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    min-height: 100vh;
+  }
+  
+  /* Toolbar Grouped Styling */
+  .toolbar { 
+    background: white; 
+    padding: 12px 15px; 
+    margin-bottom: 30px; 
+    border-radius: 8px; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+    position: sticky; 
+    top: 10px; 
+    z-index: 100; 
+    width: 100%;
+    max-width: 1100px; 
+    display: flex;
+    align-items: flex-end; 
+    justify-content: center;
+    flex-wrap: wrap; 
+  }
+  
+  .toolbar-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-right: 1px solid #e0e0e0;
+    padding: 0 15px;
+    margin-bottom: 5px;
+  }
+
+  .toolbar-group:last-child {
+    border-right: none;
+  }
+
+  .toolbar-label {
+    font-size: 11px;
+    color: #6c757d;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
+  .toolbar-controls {
+    display: flex;
+    align-items: center;
+  }
+
+  .toolbar button, .toolbar select, .toolbar input[type="color"] { 
+    padding: 8px 12px; 
+    margin: 0 4px; 
+    cursor: pointer; 
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #f8f9fa;
+    font-size: 14px;
+    transition: background-color 0.2s, box-shadow 0.2s;
+  }
+  .toolbar button:hover { background: #e2e6ea; }
+  
+  .toolbar button.active {
+    background-color: #cdd1d5;
+    box-shadow: inset 0 3px 5px rgba(0,0,0,0.15);
+    border-color: #adb5bd;
+  }
+
+  /* Custom Color Picker */
+  .color-picker-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 36px;
+    margin: 0 4px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    overflow: hidden; 
+  }
+
+  .color-picker-wrapper input[type="color"] {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
+    opacity: 0; 
+  }
+
+  .color-picker-wrapper img {
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none; 
+  }
+
+  .border-color-input {
+    padding: 0 !important;
+    height: 36px !important;
+    width: 36px !important;
+    border: 1px solid #ccc !important;
+    border-radius: 4px !important;
+    cursor: pointer;
+  }
+  
+  /* A4 Page Styling */
+  .a4-page {
+    width: 210mm;
+    min-height: 297mm;
+    background: white;
+    box-sizing: border-box;
+    padding: 15mm; 
+    position: relative;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    transform: scale(1.1); 
+    transform-origin: top center;
+    margin-bottom: 80px; 
+  }
+  
+  /* BORDER STYLING SYSTEM */
+  .page-border {
+    --border-color: #1a252f; 
+    padding: 10mm;
+    height: 267mm; 
+    box-sizing: border-box;
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+  }
+
+  .style-double { border: 5px double var(--border-color); border-radius: 0; background: none; }
+  .style-solid { border: 2px solid var(--border-color); border-radius: 0; background: none; }
+  .style-thick-thin { border: 3px solid var(--border-color); outline: 1px solid var(--border-color); outline-offset: -6px; border-radius: 0; background: none; }
+  .style-groove { border: 8px groove var(--border-color); border-radius: 0; background: none; }
+  .style-rounded-double { border: 5px double var(--border-color); border-radius: 20px; background: none; }
+  .style-none { border: none; outline: none; border-radius: 0; background: none; }
+
+  .watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.1; 
+    width: 350px;
+    z-index: -1;
+    pointer-events: none;
+  }
+  
+  .content { position: relative; z-index: 3; text-align: center; }
+  .logo { width: 105px; margin-bottom: 10px; }
+  
+  .editable { 
+    min-height: 20px; 
+    border: 1px dashed transparent; 
+    padding: 4px; 
+    transition: 0.2s;
+    background-color: transparent !important; 
+  }
+  .editable:hover, .editable:focus { 
+    border-color: #007bff; 
+    outline: none; 
+    background-color: rgba(0, 123, 255, 0.05) !important; 
+  }
+  
+  .uni-name-bn { font-size: 26px; font-weight: bold; margin-bottom: 5px; }
+  .uni-name-en { font-size: 22px; font-weight: bold; margin-bottom: 15px; }
+  .dept-name { font-size: 18px; font-weight: bold; margin-bottom: 40px; text-transform: uppercase; }
+  
+  .course-info { text-align: center; margin-bottom: 40px; font-size: 18px; line-height: 1.8; }
+  
+  /* Submission Box */
+  .submission-box { 
+    display: flex; 
+    border: 2px solid #1a252f; 
+    border-radius: 8px; 
+    margin-top: 30px; 
+    overflow: hidden; 
+    page-break-inside: avoid;
+  }
+  
+  .half-box { 
+    width: 50%; 
+    display: flex; 
+    flex-direction: column; 
+    box-sizing: border-box;
+  }
+  
+  .half-box:first-child { border-right: 2px solid #1a252f; }
+  
+  .box-header { 
+    font-weight: bold; 
+    font-size: 18px; 
+    padding: 10px 15px; 
+    border-bottom: 2px solid #1a252f; 
+    text-align: left;
+  }
+  
+  .box-content { 
+    padding: 15px; 
+    font-size: 16px; 
+    line-height: 1.6; 
+    text-align: left;
+  }
+  
+  .date-section { text-align: center; margin-top: 40px; font-weight: bold; font-size: 18px; }
+
+  /* Footer Credit */
+  .footer-credit {
+    margin-top: 50px;
+    padding: 15px 30px;
+    background: white;
+    border-radius: 50px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    font-size: 15px;
+    color: #495057;
+    text-align: center;
+    font-style: italic;
+    border: 1px solid #dee2e6;
+    z-index: 10;
+  }
+
+  /* Autocomplete Dropdown Styling */
+  .autocomplete-list {
+    position: absolute;
+    background: white;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 150px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    text-align: left;
+    min-width: 250px;
+  }
+  .autocomplete-list li {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 16px;
+    border-bottom: 1px solid #f1f1f1;
+    color: #333;
+  }
+  .autocomplete-list li:last-child {
+    border-bottom: none;
+  }
+  .autocomplete-list li:hover {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  /* Print Logic */
+  @page { size: A4; margin: 0; }
+  @media print {
+    body { background: white; margin: 0; padding: 0; display: block; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    .no-print { display: none !important; }
+    .a4-page { box-shadow: none; margin: 0; padding: 15mm; width: 210mm; height: 297mm; transform: none; page-break-after: avoid; page-break-inside: avoid; }
+    .page-border { height: 267mm; }
+    .editable { border: none !important; background: transparent !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar no-print">
+  
+  <div class="toolbar-group">
+    <div class="toolbar-label">Text Style</div>
+    <div class="toolbar-controls">
+      <button id="btn-bold" onclick="execCmd('bold')" title="Bold"><b>B</b></button>
+      <button id="btn-italic" onclick="execCmd('italic')" title="Italic"><i>I</i></button>
+      <button id="btn-underline" onclick="execCmd('underline')" title="Underline"><u>U</u></button>
+    </div>
+  </div>
+
+  <div class="toolbar-group">
+    <div class="toolbar-label">Alignment</div>
+    <div class="toolbar-controls">
+      <button id="btn-justifyLeft" onclick="execCmd('justifyLeft')" title="Align Left">Left</button>
+      <button id="btn-justifyCenter" onclick="execCmd('justifyCenter')" title="Align Center">Center</button>
+      <button id="btn-justifyRight" onclick="execCmd('justifyRight')" title="Align Right">Right</button>
+    </div>
+  </div>
+
+  <div class="toolbar-group">
+    <div class="toolbar-label">Font</div>
+    <div class="toolbar-controls">
+      <select id="fontNameSelect" onchange="if(this.value) execCmd('fontName', this.value)" style="width: 130px;">
+        <option value="">Font</option>
+        <option value="Times New Roman">Times New Roman</option>
+        <option value="Arial">Arial</option>
+        <option value="Calibri">Calibri</option>
+        <option value="Courier New">Courier New</option>
+        <option value="Georgia">Georgia</option>
+        <option value="Tahoma">Tahoma</option>
+        <option value="Verdana">Verdana</option>
+        <option value="Impact">Impact</option>
+        <option value="Comic Sans MS">Comic Sans</option>
+      </select>
+
+      <select id="fontSizeSelect" onchange="changeCustomFontSize(this.value)" style="width: 70px;">
+        <option value="">Size</option>
+        <option value="12">12</option>
+        <option value="14">14</option>
+        <option value="16">16</option>
+        <option value="18">18</option>
+        <option value="20">20</option>
+        <option value="22">22</option>
+        <option value="24">24</option>
+        <option value="26">26</option>
+        <option value="28">28</option>
+        <option value="32">32</option>
+        <option value="36">36</option>
+        <option value="42">42</option>
+        <option value="50">50</option>
+      </select>
+      
+      <div class="color-picker-wrapper" title="Text Color">
+        <img src="https://w7.pngwing.com/pngs/56/688/png-transparent-computer-icons-color-picker-icon-color-filling-angle-triangle-logo.png" alt="Text Color">
+        <input type="color" onchange="execCmd('foreColor', this.value)">
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar-group">
+    <div class="toolbar-label">Border</div>
+    <div class="toolbar-controls">
+      <select id="borderStyle" onchange="updateBorderOptions()" style="width: 140px;">
+        <option value="double">Double Line</option>
+        <option value="solid">Solid Line</option>
+        <option value="thick-thin">Thick-Thin</option>
+        <option value="groove">3D Frame</option>
+        <option value="rounded-double">Rounded Double</option>
+        <option value="none">No Border</option>
+      </select>
+
+      <input type="color" id="borderColor" class="border-color-input" onchange="updateBorderOptions()" value="#1a252f" title="Border Color">
+    </div>
+  </div>
+
+  <div class="toolbar-group">
+    <div class="toolbar-label">&nbsp;</div>
+    <div class="toolbar-controls">
+      <button onclick="saveAndPrint()" style="background: #28a745; color: white; border: none; font-weight: bold;">Print / Save PDF</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="a4-page">
+  <div class="page-border style-double" id="page-border">
+    <img src="https://upload.wikimedia.org/wikipedia/en/7/70/Logo_of_Noakhali_Science_and_Technology_University.gif" class="watermark" id="watermark-img" alt="Watermark">
+    <div class="content">
+      <img src="https://upload.wikimedia.org/wikipedia/en/7/70/Logo_of_Noakhali_Science_and_Technology_University.gif" class="logo" id="top-logo" alt="NSTU Logo">
+      <div class="editable uni-name-bn" contenteditable="true">নোয়াখালী বিজ্ঞান ও প্রযুক্তি বিশ্ববিদ্যালয়</div>
+      <div class="editable uni-name-en" contenteditable="true">Noakhali Science and Technology University</div>
+      <div class="editable dept-name" contenteditable="true">DEPARTMENT OF </div>
+      <div class="course-info">
+        <div class="editable" contenteditable="true"><b>Course Title:</b> <i>Enter Course Title here_</i></div>
+        <div class="editable" contenteditable="true"><b>Course Code:</b> <i>Enter Course Code here_</i></div>
+      </div>
+      <div class="submission-box" id="submission-box">
+        
+        <div class="half-box" id="half-box-left">
+          <div class="editable box-header" id="box-header-1" contenteditable="true">SUBMITTED TO:</div>
+          <div class="editable box-content" id="teacher-box" contenteditable="true" data-type="savedTeachersHTML">
+            <b>Teacher Name_</b><br>
+            Professor<br>
+            Department of 
+          </div>
+        </div>
+        
+        <div class="half-box">
+          <div class="editable box-header" id="box-header-2" contenteditable="true">SUBMITTED BY:</div>
+          <div class="editable box-content" id="student-box" contenteditable="true" data-type="savedStudentsHTML">
+            <b>Student Name_</b><br>
+            Roll: <br>
+            Year: 01 Term: 01<br>
+            Department of 
+          </div>
+        </div>
+
+      </div>
+      <div class="date-section">
+        <div class="editable" contenteditable="true">Submission Date: <span id="current-date"></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer-credit no-print">
+  Developed with AI by <b>Adib Adnan (CSTE-20)</b>
+</div>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+      const today = new Date();
+      const dd = String(today.getDate()).padStart(2, '0');
+      const mm = String(today.getMonth() + 1).padStart(2, '0'); 
+      const yyyy = today.getFullYear();
+      document.getElementById('current-date').innerText = dd + '-' + mm + '-' + yyyy;
+      updateBorderOptions();
+  });
+
+  /* ----- ADVANCED Autocomplete Feature Start ----- */
+  
+  function getBoxDetails(html) {
+      let temp = document.createElement('div');
+      temp.innerHTML = html.replace(/<br\s*[\/]?>/gi, "\n").replace(/<\/div>/gi, "\n").replace(/<\/p>/gi, "\n");
+      let text = temp.textContent || temp.innerText || "";
+      let lines = text.split(/\n/).map(l => l.trim()).filter(l => l.length > 0);
+      
+      let name = lines.length > 0 ? lines[0] : "";
+      let roll = "";
+      
+      for(let line of lines) {
+          if(line.toLowerCase().includes("roll")) {
+              roll = line.replace(/roll\s*[:\-]?\s*/i, "").trim();
+          }
+      }
+      return { name, roll };
+  }
+
+  function saveAndPrint() {
+      let teacherHTML = document.getElementById('teacher-box').innerHTML;
+      let studentHTML = document.getElementById('student-box').innerHTML;
+      
+      let tDetails = getBoxDetails(teacherHTML);
+      let sDetails = getBoxDetails(studentHTML);
+      
+      let teachers = JSON.parse(localStorage.getItem('savedTeachersHTML') || '{}');
+      if (tDetails.name && !tDetails.name.includes("Teacher Name_")) {
+          teachers[tDetails.name] = teacherHTML;
+      }
+      localStorage.setItem('savedTeachersHTML', JSON.stringify(teachers));
+      
+      let students = JSON.parse(localStorage.getItem('savedStudentsHTML') || '{}');
+      if (sDetails.name && !sDetails.name.includes("Student Name_")) {
+          students[sDetails.name] = studentHTML;
+      }
+      if (sDetails.roll && sDetails.roll.length >= 2) {
+          students[sDetails.roll] = studentHTML;
+      }
+      localStorage.setItem('savedStudentsHTML', JSON.stringify(students));
+      
+      window.print();
+  }
+
+  const autocompleteList = document.createElement('ul');
+  autocompleteList.className = 'autocomplete-list no-print';
+  document.body.appendChild(autocompleteList);
+  let currentActiveInput = null;
+
+  document.querySelectorAll('.box-content[data-type]').forEach(box => {
+    box.addEventListener('input', function() {
+       let type = this.getAttribute('data-type');
+       let details = getBoxDetails(this.innerHTML);
+       
+       let savedData = JSON.parse(localStorage.getItem(type) || '{}');
+       let keys = Object.keys(savedData);
+       
+       autocompleteList.innerHTML = '';
+       
+       let searchTerms = [];
+       if (details.name && details.name.length >= 2 && !details.name.includes("Name_")) {
+           searchTerms.push(details.name);
+       }
+       if (details.roll && details.roll.length >= 2) {
+           searchTerms.push(details.roll);
+       }
+       
+       if (searchTerms.length === 0) {
+         autocompleteList.style.display = 'none';
+         return;
+       }
+
+       let matches = new Set();
+       searchTerms.forEach(term => {
+         keys.forEach(k => {
+           if (k.toLowerCase().includes(term.toLowerCase()) && k.toLowerCase() !== term.toLowerCase()) {
+             matches.add(k);
+           }
+         });
+       });
+
+       let matchArray = Array.from(matches);
+       
+       if (matchArray.length > 0) {
+         currentActiveInput = this;
+         let rect = this.getBoundingClientRect();
+         autocompleteList.style.left = rect.left + window.scrollX + 'px';
+         autocompleteList.style.top = rect.bottom + window.scrollY + 5 + 'px';
+         autocompleteList.style.display = 'block';
+
+         matchArray.forEach(match => {
+           let li = document.createElement('li');
+           li.innerText = match; 
+           li.onmousedown = (e) => { 
+             e.preventDefault(); 
+             currentActiveInput.innerHTML = savedData[match]; 
+             autocompleteList.style.display = 'none';
+             
+             let range = document.createRange();
+             let sel = window.getSelection();
+             range.selectNodeContents(currentActiveInput);
+             range.collapse(false);
+             sel.removeAllRanges();
+             sel.addRange(range);
+           };
+           autocompleteList.appendChild(li);
+         });
+       } else {
+         autocompleteList.style.display = 'none';
+       }
+    });
+
+    box.addEventListener('blur', () => {
+      setTimeout(() => autocompleteList.style.display = 'none', 150);
+    });
+  });
+
+  /* ----- ADVANCED Autocomplete Feature End ----- */
+
+  function updateBorderOptions() {
+      let style = document.getElementById('borderStyle').value;
+      let color = document.getElementById('borderColor').value;
+      let borderDiv = document.getElementById('page-border');
+      borderDiv.style.setProperty('--border-color', color);
+      borderDiv.className = 'page-border style-' + style;
+      let subBox = document.getElementById('submission-box');
+      if (subBox) {
+          subBox.style.borderColor = color;
+          document.getElementById('box-header-1').style.borderBottomColor = color;
+          document.getElementById('box-header-2').style.borderBottomColor = color;
+          document.getElementById('half-box-left').style.borderRightColor = color;
+      }
+  }
+
+  function execCmd(command, value = null) {
+    document.execCommand(command, false, value);
+    if(command.includes('justify')) {
+        document.execCommand("backColor", false, "transparent");
+    }
+    updateToolbarState();
+  }
+
+  function changeCustomFontSize(size) {
+    if(!size) return;
+    document.execCommand("fontSize", false, "7"); 
+    let fontElements = document.querySelectorAll("font[size='7']");
+    fontElements.forEach(el => {
+      el.removeAttribute("size");
+      el.style.fontSize = size + "px"; 
+    });
+    updateToolbarState();
+  }
+
+  function updateToolbarState() {
+    const commands = ['bold', 'italic', 'underline', 'justifyLeft', 'justifyCenter', 'justifyRight'];
+    commands.forEach(cmd => {
+      const btn = document.getElementById('btn-' + cmd);
+      if(btn) {
+        if (document.queryCommandState(cmd)) {
+          btn.classList.add('active'); 
+        } else {
+          btn.classList.remove('active'); 
+        }
+      }
+    });
+
+    try {
+        let selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+            let node = selection.anchorNode;
+            if (node.nodeType === 3) node = node.parentNode;
+            let computedStyle = window.getComputedStyle(node);
+            let sizePx = computedStyle.fontSize;
+            let sizeInt = Math.round(parseFloat(sizePx));
+            let sizeSelect = document.getElementById("fontSizeSelect");
+            for (let i = 1; i < sizeSelect.options.length; i++) {
+                if (sizeSelect.options[i].value == sizeInt) {
+                    sizeSelect.selectedIndex = i;
+                    break;
+                }
+            }
+            let computedFont = computedStyle.fontFamily.replace(/['"]/g, '');
+            let fontSelect = document.getElementById("fontNameSelect");
+            for(let i = 1; i < fontSelect.options.length; i++) {
+                if(computedFont.toLowerCase().includes(fontSelect.options[i].value.toLowerCase())) {
+                    fontSelect.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+    } catch(e) {}
+  }
+
+  document.querySelectorAll('.editable').forEach(el => {
+    el.addEventListener('keyup', updateToolbarState);
+    el.addEventListener('mouseup', updateToolbarState);
+    el.addEventListener('click', updateToolbarState);
+  });
+</script>
+
+</body>
+</html>

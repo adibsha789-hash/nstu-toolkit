@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NSTU Assignment & Lab Report Toolkit | By Adib</title>
+<style>
+  body {
+    margin: 0;
+    padding: 10vh 20px 0 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 50px;
+  }
+
+  .header-logo {
+    max-height: 150px; 
+    width: auto;
+    margin-bottom: 25px; 
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .header h1 {
+    color: #1a252f;
+    font-size: 36px;
+    margin-bottom: 10px;
+    margin-top: 0;
+  }
+
+  .header p {
+    color: #6c757d;
+    font-size: 18px;
+    margin: 0;
+  }
+
+  .card-container {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .card {
+    background: white;
+    width: 300px;
+    padding: 40px 20px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    text-align: center;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.3s ease;
+    border-top: 5px solid transparent;
+  }
+
+  .card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+  }
+
+  .card.cover {
+    border-top-color: #007bff;
+  }
+
+  .card.index {
+    border-top-color: #28a745;
+  }
+
+  .icon {
+    font-size: 50px;
+    margin-bottom: 20px;
+  }
+
+  .card h2 {
+    margin: 0 0 15px 0;
+    font-size: 24px;
+  }
+
+  .card p {
+    color: #6c757d;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .footer {
+    margin-top: auto; 
+    padding-bottom: 30px;
+    font-size: 14px;
+    color: #6c757d;
+    font-weight: bold;
+  }
+
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <img src="https://nstu.edu.bd/assets/images/nstu_logo.png" alt="NSTU Logo" class="header-logo">
+    <h1>NSTU Assignment & Lab Report Toolkit</h1>
+    <p>Everything you need for a perfect submission</p>
+  </div>
+
+  <div class="card-container">
+    <a href="cover-page.html" class="card cover">
+      <div class="icon">📄</div>
+      <h2>Cover Page</h2>
+      <p>Generate a professional, fully formatted cover page with autocomplete and custom borders.</p>
+    </a>
+
+    <a href="index-generator.html" class="card index">
+      <div class="icon">📑</div>
+      <h2>Index Generator</h2>
+      <p>Create clean and organized table of contents for your lab experiments instantly.</p>
+    </a>
+  </div>
+
+  <div class="footer">
+    Developed with AI by Adib Adnan (CSTE-20)
+  </div>
+
+</body>
+</html>
